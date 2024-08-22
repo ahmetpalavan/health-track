@@ -35,12 +35,12 @@ export const PasskeyModal = () => {
       } else {
         setOpen(true);
       }
-  }, [encryptedKey]);
+  }, [encryptedKey, path, router]);
 
   const closeModal = useCallback(() => {
     setOpen(false);
     router.push('/');
-  }, []);
+  }, [router]);
 
   const validatePasskey = useCallback(
     (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

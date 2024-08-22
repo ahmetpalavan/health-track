@@ -10,9 +10,12 @@ interface FileUploaderProps {
 }
 
 export const FileUploader = ({ files, onChange }: FileUploaderProps) => {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    onChange(acceptedFiles);
-  }, []);
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      onChange(acceptedFiles);
+    },
+    [onChange]
+  );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
   const convertFileToUrl = (file: File) => URL.createObjectURL(file);
 
