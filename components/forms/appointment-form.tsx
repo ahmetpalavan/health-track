@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import 'react-phone-number-input/style.css';
 import { z } from 'zod';
 import { Doctors } from '~/constants';
-import { createAppointment } from '~/lib/actions/appointment.actions';
+import { createAppointment, updateAppointment } from '~/lib/actions/appointment.actions';
 import { getAppointmentSchema } from '~/lib/validation';
 import { Appointment } from '~/types/appwrite.types';
 import CustomFormField, { FormFieldType } from '../custom-form-field';
@@ -25,7 +25,7 @@ export const AppointmentForm = ({
 }: {
   userId: string;
   patientId: string;
-  type: 'create' | 'cancel' | 'schedule';
+  type: 'create' | 'schedule' | 'cancel';
   appointment?: Appointment;
   setOpen?: Dispatch<SetStateAction<boolean>>;
 }) => {
@@ -62,6 +62,7 @@ export const AppointmentForm = ({
 
     try {
       if (type === 'create' && patientId) {
+        console.log('I am here');
         const appointment = {
           userId,
           patient: patientId,
@@ -77,6 +78,25 @@ export const AppointmentForm = ({
         if (newAppointment) {
           form.reset();
           router.push(`/patients/${userId}/new-appointment/success?appointmentId=${newAppointment.$id}`);
+        }
+      } else {
+        const appointmentToUpdate = {
+          userId,
+          appointmentId: appointment?.$id!,
+          appointment: {
+            primaryPhysician: values.primaryPhysician,
+            schedule: new Date(values.schedule),
+            status: status as Status,
+            cancellationReason: values.cancellationReason,
+          },
+          type,
+        };
+
+        const updatedAppointment = await updateAppointment(appointmentToUpdate);
+
+        if (updatedAppointment) {
+          setOpen && setOpen(false);
+          form.reset();
         }
       }
     } catch (error) {

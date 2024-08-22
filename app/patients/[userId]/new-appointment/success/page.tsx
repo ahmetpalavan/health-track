@@ -3,12 +3,15 @@ import Link from 'next/link';
 import ConfettiPage from '~/components/confetti';
 import { Button } from '~/components/ui/button';
 import { Doctors } from '~/constants';
-import { getAppointments } from '~/lib/actions/appointment.actions';
+import { getAppointment } from '~/lib/actions/appointment.actions';
 import { formatDateTime } from '~/lib/utils';
+import * as Sentry from '@sentry/nextjs';
 
 const SuccessPage = async ({ params: { userId }, searchParams }: SearchParamProps) => {
   const appointmentsId = (searchParams?.appointmentId as string) || '';
-  const appointments = await getAppointments(appointmentsId);
+  const appointments = await getAppointment(appointmentsId);
+
+  Sentry.metrics.set(appointmentsId, 'appointment_id');
 
   const doctor = Doctors.find((doctor) => doctor.name === appointments?.primaryPhysician);
 
