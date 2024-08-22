@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import 'react-phone-number-input/style.css';
 import { z } from 'zod';
 import { Doctors, GenderOptions, IdentificationTypes, PatientFormDefaultValues } from '~/constants';
-import { createUser } from '~/lib/actions/patient.actions';
+import { registerPatient } from '~/lib/actions/patient.actions';
 import { PatientFormValidation } from '~/lib/validation';
 import CustomFormField, { FormFieldType } from '../custom-form-field';
 import { FileUploader } from '../file-uploader';
@@ -35,22 +35,36 @@ export const RegisterForm = ({ user }: { user: User }) => {
   const onSubmit = async (values: z.infer<typeof PatientFormValidation>) => {
     setIsLoading(true);
 
-    try {
-      const user = {
-        name: values.name,
-        email: values.email,
-        phone: values.phone,
-      };
-      const newUser = await createUser(user);
+    let formData;
 
-      if (newUser) {
-        router.push(`/patients/${newUser.$id}/register`);
-      }
+    if (values.identificationDocument && values.identificationDocument.length > 0) {
+      const blobFile = new Blob([values.identificationDocument[0]], {
+        type: values.identificationDocument[0].type,
+      });
+      formData = new FormData();
+      formData.append('blobFile', blobFile);
+      formData.append('fileName', values.identificationDocument[0].name);
+    }
+
+    try {
+      const patienData = {
+        ...values,
+        userId: user.$id,
+        birthDate: new Date(values.birthDate),
+        identificationDocument: formData,
+        allergies: values.allergies ?? undefined,
+        currentMedication: values.currentMedication ?? undefined,
+        familyMedicalHistory: values.familyMedicalHistory ?? undefined,
+        pastMedicalHistory: values.pastMedicalHistory ?? undefined,
+        identificationType: values.identificationType ?? undefined,
+        identificationNumber: values.identificationNumber ?? undefined,
+      };
+
+      const patient = await registerPatient(patienData);
+      if (patienData) router.push(`/patients/${user.$id}/new-appointment`);
     } catch (error) {
       console.log(error);
     }
-
-    setIsLoading(false);
   };
 
   return (
