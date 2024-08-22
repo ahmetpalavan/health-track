@@ -11,7 +11,7 @@ export const PatientFormValidation = z.object({
   email: z.string().email('Invalid email address'),
   phone: z.string().refine((phone) => /^\+\d{10,15}$/.test(phone), 'Invalid phone number'),
   birthDate: z.coerce.date(),
-  gender: z.enum(['Male', 'Female', 'Other']),
+  gender: z.enum(['male', 'female', 'other']),
   address: z.string().min(5, 'Address must be at least 5 characters').max(500, 'Address must be at most 500 characters'),
   occupation: z.string().min(2, 'Occupation must be at least 2 characters').max(500, 'Occupation must be at most 500 characters'),
   emergencyContactName: z
@@ -56,3 +56,38 @@ export const PatientFormValidation = z.object({
       message: 'You must consent to privacy in order to proceed',
     }),
 });
+
+export const CreateAppointmentSchema = z.object({
+  primaryPhysician: z.string().min(2, 'Select at least one doctor'),
+  schedule: z.coerce.date(),
+  reason: z.string().min(2, 'Reason must be at least 2 characters').max(500, 'Reason must be at most 500 characters'),
+  note: z.string().optional(),
+  cancellationReason: z.string().optional(),
+});
+
+export const ScheduleAppointmentSchema = z.object({
+  primaryPhysician: z.string().min(2, 'Select at least one doctor'),
+  schedule: z.coerce.date(),
+  reason: z.string().optional(),
+  note: z.string().optional(),
+  cancellationReason: z.string().optional(),
+});
+
+export const CancelAppointmentSchema = z.object({
+  primaryPhysician: z.string().min(2, 'Select at least one doctor'),
+  schedule: z.coerce.date(),
+  reason: z.string().optional(),
+  note: z.string().optional(),
+  cancellationReason: z.string().min(2, 'Reason must be at least 2 characters').max(500, 'Reason must be at most 500 characters'),
+});
+
+export function getAppointmentSchema(type: string) {
+  switch (type) {
+    case 'create':
+      return CreateAppointmentSchema;
+    case 'cancel':
+      return CancelAppointmentSchema;
+    default:
+      return ScheduleAppointmentSchema;
+  }
+}
